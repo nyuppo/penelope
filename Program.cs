@@ -23,6 +23,7 @@ class Program
     static void AppMain(Application app, string[] args)
     {
         app.Styles.Add(new FluentTheme());
+        app.Styles.Add(AppStyles.Create());
         app.RequestedThemeVariant = ThemeVariant.Light;
 
         var config = GlobalConfig.Load();

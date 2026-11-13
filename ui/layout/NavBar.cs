@@ -6,12 +6,14 @@ namespace penelope.layout;
 
 public class NavBar
 {
+    private static MenuItem StyledNavTab(string header) => new MenuItem { Header = header, Classes = { "tab" } };
+
     public static Menu Create(MainWindow owner)
     {
-        var settings = new MenuItem { Header = "_Settings..." };
+        var settings = StyledNavTab("_Settings...");
         settings.Click += (_, _) => owner.NavigateSettings();
 
-        var exit = new MenuItem { Header = "E_xit" };
+        var exit = StyledNavTab("E_xit");
         exit.Click += (_, _) => owner.Close();
 
         return new Menu
@@ -23,13 +25,13 @@ public class NavBar
                     Header = "_File",
                     Items =
                     {
-                        new MenuItem { Header = "_Open Project..." },
+                        StyledNavTab("Open Project..."),
                         settings,
                         new Separator(),
                         exit,
                     }
                 },
-                new MenuItem { Header = "_View" },
+                StyledNavTab("_View")
             }
         };
     }

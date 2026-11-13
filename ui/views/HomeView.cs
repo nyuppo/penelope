@@ -38,41 +38,10 @@ public class HomeView : UserControl
             }
         };
 
-/*
-        var button = new Button
-        {
-            Content = "Click Me",
-            FontSize = 16,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Top,
-            Background = Brushes.SteelBlue,
-            Foreground = Brushes.White,
-        };
-        var stack = new StackPanel
-        {
-            Spacing = 12,
-            Margin = new Thickness(16)
-        };
-        var rootLabel = new TextBlock
-        {
-            Text = _config.EffectiveRoot,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            VerticalAlignment = VerticalAlignment.Top,
-            FontSize = 12
-        };
-        _config.Changed += () => rootLabel.Text = _config.EffectiveRoot;
-        stack.Children.Add(rootLabel);
-        stack.Children.Add(button);
-        */
-
-        var browserColumn = new Border
-        {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0, 0, 1, 0),
-            Child = _fileBrowser,
-        };
+        var browserColumn = _fileBrowser;
 
         var splitter = new GridSplitter {
+            Classes = { "divider" },
             Width = 1,
             ResizeDirection = GridResizeDirection.Columns
         };

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
 using penelope.layout;
@@ -19,11 +20,28 @@ public class MainWindow : Window
         Width = 1100;
         Height = 700;
 
+        var menu = NavBar.Create(this);
+        menu.Margin = new Thickness(16, 0);
+        menu.VerticalAlignment = VerticalAlignment.Center;
+
         var navbar = new Border
         {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0, 0, 0, 1),
-            Child = NavBar.Create(this),
+            Classes = { "nav" },
+            Child = new Panel
+            {
+                Children =
+                {
+                    new LinenTexture(),
+                    new Line
+                    {
+                        Classes = { "stitch" },
+                        StartPoint = new Point(0, 0),
+                        EndPoint = new Point(1, 0),
+                        Stretch = Stretch.Fill,
+                    },
+                    menu,
+                }
+            }
         };
         DockPanel.SetDock(navbar, Dock.Top);
 

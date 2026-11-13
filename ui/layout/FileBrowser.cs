@@ -1,59 +1,54 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace penelope.layout;
 
 public class FileBrowser : UserControl
 {
     readonly GlobalConfig _config;
-    readonly TreeView _fileTree = new();
+
+    readonly HomeView _owner;
+    readonly StackPanel _treeHost = new();
+    readonly TextBlock _rootName = new() {
+        Classes = { "overline" },
+        VerticalAlignment = VerticalAlignment.Center
+    };
+    readonly TextBlock _rootCount = new() {
+        Classes = { "meta" },
+        VerticalAlignment = VerticalAlignment.Center
+    };
+    Border? _selected;
 
     public FileBrowser(GlobalConfig config, HomeView owner)
     {
         _config = config;
+        _owner = owner;
 
-        var header = new TextBlock
+        DockPanel.SetDock(_rootCount, Dock.Right);
+        var header = new DockPanel
         {
-            Text = _config.EffectiveRoot,
-            FontSize = 12,
-            Margin = new Thickness(8),
+            Classes = { "tree-label" },
+            Children = { _rootCount, _rootName },
         };
-        _config.Changed += () => header.Text = _config.EffectiveRoot;
         DockPanel.SetDock(header, Dock.Top);
-
-        Content = new DockPanel { Children = { header, _fileTree } };
-
-        _fileTree.SelectionChanged += (sender, args) =>
+        
+        Content = new Border
         {
-            if (args.AddedItems.Count == 0)
-            {
-                owner.RequestContentType(HomeView.ContentType.None);
-                return;
-            }
-
-            foreach (var item in args.AddedItems)
-            {
-                if (item is TreeViewItem tvi)
-                {
-                    var info = tvi.Tag as FileSystemInfo;
-
-                    if (info is FileInfo)
-                    {
-                        Console.WriteLine("File | " + info.FullName);
-                        owner.ViewFile(info.FullName);
-                    } else if (info is DirectoryInfo)
-                    {
-                        Console.WriteLine("Folder | " + info.FullName);
-                    } else
-                    {
-                        Console.WriteLine("Unknown | " + info.FullName);
-                    }
-                }
-            }
+            Classes = { "tree" },
+            Child = new DockPanel { Children = {
+                header,
+                new ScrollViewer { Content = _treeHost }
+            }},
         };
 
         _config.Changed += RefreshTree;
@@ -62,41 +57,155 @@ public class FileBrowser : UserControl
 
     public void RefreshTree()
     {
-        var root = _config.EffectiveRoot;
-        _fileTree.ItemsSource = Directory.Exists(root) ? BuildNodes(new DirectoryInfo(root)) : null;
+        if (_selected != null)
+        {
+            _owner.ViewFile(null);
+        }
+        _selected = null;
+        _treeHost.Children.Clear();
+
+        var dir = new DirectoryInfo(_config.EffectiveRoot);
+        _rootName.Text = dir.Name.ToUpperInvariant();
+        ToolTip.SetTip(_rootName, dir.FullName);
+
+        if (!dir.Exists)
+        {
+            _rootCount.Text = "";
+            return;
+        }
+        _rootCount.Text = CountEntries(dir)?.ToString() ?? "";
+        foreach (var node in BuildNodes(dir, 0))
+        {
+            _treeHost.Children.Add(node);
+        }
     }
 
-    static List<TreeViewItem> BuildNodes(DirectoryInfo dir)
+    List<Control> BuildNodes(DirectoryInfo dir, int depth)
     {
-        var nodes = new List<TreeViewItem>();
+        var nodes = new List<Control>();
+        DirectoryInfo[] dirs;
+        FileInfo[] files;
 
-        foreach (var sub in dir.EnumerateDirectories())
+        try
         {
-            var folderItem = new TreeViewItem
-            {
-                Header = sub.Name,
-                Tag = sub,
-                ItemsSource = BuildNodes(sub),
-                Background = Brushes.AliceBlue
-            };
-            folderItem.Classes.Add("tree_item_folder");
-
-            nodes.Add(folderItem);
+            dirs = dir.GetDirectories();
+            files = dir.GetFiles();
+        } catch (Exception e) when (e is UnauthorizedAccessException or IOException)
+        {
+            return nodes;
         }
 
-        foreach (var file in dir.EnumerateFiles())
+        foreach (var sub in dirs.OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase))
         {
-            var fileItem = new TreeViewItem
-            {
-                Header = file.Name,
-                Tag = file,
-                Background = Brushes.LightBlue
-            };
-            fileItem.Classes.Add("tree_item_file");
+            nodes.Add(BuildFolder(sub, depth));
+        }
 
-            nodes.Add(fileItem);
+        foreach (var file in files.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            var row = MakeRow(file, depth, IconFor(file), null, isDir: false);
+            row.PointerPressed += (_, e) =>
+            {
+                if (!e.GetCurrentPoint(row).Properties.IsLeftButtonPressed)
+                {
+                    return;
+                }
+                Select(row);
+                _owner.ViewFile(file.FullName);
+            };
+            nodes.Add(row);
         }
 
         return nodes;
+    }
+
+    Control BuildFolder(DirectoryInfo dir, int depth)
+    {
+        var row = MakeRow(dir, depth, Icons.Folder, CountEntries(dir), isDir: true);
+        var children = new StackPanel { IsVisible = false };
+        var loaded = false;
+
+        row.PointerPressed += (_, e) =>
+        {
+            if (!e.GetCurrentPoint(row).Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+
+            if (!loaded)
+            {
+                children.Children.AddRange(BuildNodes(dir, depth + 1));
+                loaded = true;
+            }
+            children.IsVisible = !children.IsVisible;
+            row.Classes.Set("expanded", children.IsVisible);
+        };
+
+        return new StackPanel { Children = { row, children } };
+    }
+
+    static Border MakeRow(FileSystemInfo info, int depth, Bitmap? icon, int? count, bool isDir)
+    {
+        var grid = new Grid {
+            ColumnDefinitions = new ColumnDefinitions("12,16,*,Auto"),
+            ColumnSpacing = 8
+        };
+
+        if (isDir)
+        {
+            grid.Children.Add(Icons.Glyph(Icons.Chevron, "chevron"));
+        }
+
+        var glyph = Icons.Glyph(icon);
+        Grid.SetColumn(glyph, 1);
+        grid.Children.Add(glyph);
+
+        var name = new TextBlock
+        {
+            Text = info.Name,
+            Classes = { "body", "name" },
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        Grid.SetColumn(name, 2);
+        grid.Children.Add(name);
+
+        if (count is int c)
+        {
+            var countText = new TextBlock {
+                Text = c.ToString(),
+                Classes = { "hand_small", "soft" },
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(countText, 3);
+            grid.Children.Add(countText);
+        }
+
+        return new Border
+        {
+            Classes = { "row" },
+            Tag = info,
+            Padding = new Thickness(8 + depth * 16, 0, 8, 0),
+            Child = new Panel { Children = { new Border { Classes = { "highlighter" } }, grid } },
+        };
+    }
+
+    void Select(Border row)
+    {
+        _selected?.Classes.Set("selected", false);
+        _selected = row;
+        row.Classes.Set("selected", true);
+    }
+
+    static Bitmap? IconFor(FileInfo f) => FileViewer.ValidImageExtensions.Contains(f.Extension) ? Icons.Image : Icons.Document;
+
+    static int? CountEntries(DirectoryInfo d)
+    {
+        try
+        {
+            return d.EnumerateFileSystemInfos().Count();
+        } catch (Exception e) when (e is UnauthorizedAccessException or IOException)
+        {
+            return null;
+        }
     }
 }

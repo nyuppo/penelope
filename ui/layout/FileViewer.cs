@@ -22,7 +22,7 @@ public class FileViewer : UserControl
 
     public string? FilePath { get; private set; }
 
-    static readonly HashSet<string> ValidImageExtensions = new(StringComparer.OrdinalIgnoreCase)
+    internal static readonly HashSet<string> ValidImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico",
     };
