@@ -227,7 +227,8 @@ public class FileViewer : UserControl
 
     void OnWheel(object? s, PointerWheelEventArgs e)
     {
-        var p = e.GetPosition(_viewport);
+        // convert cursor from viewport space into image local space
+        var p = e.GetPosition(_viewport) - _image.Bounds.Position;
         var f = Math.Clamp(_view.M11 * Math.Pow(ZoomStep, e.Delta.Y), MinZoom, MaxZoom) / _view.M11;
         _view = _view * Matrix.CreateTranslation(-p.X, -p.Y) * Matrix.CreateScale(f, f) * Matrix.CreateTranslation(p.X, p.Y);
         ApplyView();
@@ -276,23 +277,15 @@ public class FileViewer : UserControl
         }
     }
 
-    double FitScale()
-    {
-        if (_image.Source is not { } src) return 1;
-        var vp = _viewport.Bounds.Size;
-        var fit = Math.Min(vp.Width / src.Size.Width, vp.Height / src.Size.Height);
-        return _image.StretchDirection == StretchDirection.DownOnly ? Math.Min(fit, 1) : fit;
-    }
-
     void ClampPan()
     {
-        if (_image.Source is not { } src)
+        if (_image.Source is null)
         {
             return;
         }
         var vp = _viewport.Bounds.Size;
-        var size = src.Size * FitScale();
-        var r = new Rect((vp.Width - size.Width) / 2, (vp.Height - size.Height) / 2, size.Width, size.Height).TransformToAABB(_view);
+        var b = _image.Bounds;
+        var r = new Rect(b.Size).TransformToAABB(_view).Translate(b.Position);
 
         double dx = 0, dy = 0;
         if (r.Right < MinVisiblePixels)
