@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using System;
 
@@ -7,6 +8,7 @@ namespace penelope;
 
 class Program
 {
+    [STAThread]
     public static void Main(string[] args) {
         AppBuilder.Configure<Application>()
             .UsePlatformDetect()
@@ -21,20 +23,10 @@ class Program
     static void AppMain(Application app, string[] args)
     {
         app.Styles.Add(new FluentTheme());
+        app.RequestedThemeVariant = ThemeVariant.Light;
 
-        var window = new Window
-        {
-            Title = "Penelope",
-            Width = 400,
-            Height = 300,
-            Content = new TextBlock
-            {
-                Text = "Welcome to Penelope.",
-                FontSize = 24,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            }
-        };
+        var config = GlobalConfig.Load();
+        var window = new MainWindow(config);
 
         window.Show();
         app.Run(window);
