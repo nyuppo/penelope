@@ -3,10 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using Avalonia.Threading;
+using SkiaSharp;
 
 namespace penelope.layout;
 
@@ -23,16 +27,24 @@ public class FileViewer : UserControl
     };
     readonly Image _image;
 
+    List<Bitmap> _frames = new();
+    int[] _durations = Array.Empty<int>();
+    int _frameIndex;
+    readonly DispatcherTimer _animTimer;
+    int _loadId;
+
     public FileViewer(GlobalConfig config)
     {
         _config = config;
-
         _image = new Image
         {
             Stretch = Stretch.Uniform,
             StretchDirection = StretchDirection.DownOnly,
             IsVisible = false,
         };
+
+        _animTimer = new DispatcherTimer();
+        _animTimer.Tick += OnAnimTick;
 
         var headerRow = new Grid
         {
@@ -68,28 +80,108 @@ public class FileViewer : UserControl
         Content = new DockPanel { Children = { header, _image } };
     }
 
-    public void SetFile(string? filePath)
+    public async void SetFile(string? filePath)
     {
         FilePath = filePath;
         _pathText.Text = filePath;
         _pathText.IsVisible = !string.IsNullOrEmpty(filePath);
 
-        // dispose old bitmap
-        var old = _image.Source as Bitmap;
+        var id = ++_loadId;
+
+        // dispose old
+        _animTimer.Stop();
         _image.Source = null;
         _image.IsVisible = false;
-        old?.Dispose();
-
-        if (filePath != null && ValidImageExtensions.Contains(Path.GetExtension(filePath)))
+        foreach (var f in _frames)
         {
-            try
+            f.Dispose();
+        }
+        _frames.Clear();
+
+        if (filePath == null || !ValidImageExtensions.Contains(Path.GetExtension(filePath)))
+        {
+            return;
+        }
+
+        (List<Bitmap> frames, int[] durations) r;
+        try
+        {
+            r = await Task.Run(() => DecodeFrames(filePath));
+        } catch (Exception)
+        {
+            // TODO: handle corrupt or unsupported file
+            return;
+        }
+
+        // handle stale load
+        if (id != _loadId)
+        {
+            foreach (var f in r.frames)
             {
-                _image.Source = new Bitmap(filePath);
-                _image.IsVisible = true;
-            } catch (Exception)
-            {
-                // TODO: handle corrupt or unsupported file
+                f.Dispose();
+                return;
             }
         }
+
+        (_frames, _durations, _frameIndex) = (r.frames, r.durations, 0);
+        _image.Source = _frames[0];
+        _image.IsVisible = true;
+        if (_frames.Count > 1)
+        {
+            _animTimer.Interval = TimeSpan.FromMilliseconds(_durations[0]);
+            _animTimer.Start();
+        }
+    }
+
+    void OnAnimTick(object? s, EventArgs e)
+    {
+        _frameIndex = (_frameIndex + 1) % _frames.Count;
+        _image.Source = _frames[_frameIndex];
+        _animTimer.Interval = TimeSpan.FromMilliseconds(_durations[_frameIndex]);
+    }
+
+    static (List<Bitmap> frames, int[] durations) DecodeFrames(string path)
+    {
+        using var codec = SKCodec.Create(path);
+        
+        var infos = codec.FrameInfo;
+        if (infos.Length <= 1) return (new() { new Bitmap(path) }, new[] { 0 });
+
+        var info = new SKImageInfo(codec.Info.Width, codec.Info.Height, SKColorType.Bgra8888, SKAlphaType.Premul);
+        var sk = new List<SKBitmap>();
+        var frames = new List<Bitmap>();
+        var durations = new int[infos.Length];
+
+        try
+        {
+            for (int i = 0; i < infos.Length; i++)
+            {
+                int req = infos[i].RequiredFrame;
+                var bmp = req >= 0 ? sk[req].Copy() : new SKBitmap(info);
+                if (req < 0) bmp.Erase(SKColors.Transparent);
+
+                sk.Add(bmp);
+                codec.GetPixels(info, bmp.GetPixels(), new SKCodecOptions(i, req));
+                frames.Add(
+                    new Bitmap(
+                        PixelFormat.Bgra8888,
+                        AlphaFormat.Premul,
+                        bmp.GetPixels(),
+                        new PixelSize(bmp.Width, bmp.Height),
+                        new Vector(96, 96),
+                        bmp.RowBytes
+                    )
+                );
+                durations[i] = infos[i].Duration <= 10 ? 100 : infos[i].Duration;
+            }
+        }
+        finally {
+            foreach (var b in sk)
+            {
+                b.Dispose();
+            }
+        }
+
+        return (frames, durations);
     }
 }
