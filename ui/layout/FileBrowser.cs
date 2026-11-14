@@ -43,6 +43,7 @@ public class FileBrowser : UserControl
     readonly List<Node> _roots = new();
     Node? _selected;
     Node? _active;
+    readonly HashSet<string> _expanded = new();
 
     public FileBrowser(Project project, HomeView owner)
     {
@@ -87,6 +88,8 @@ public class FileBrowser : UserControl
 
     public void RefreshTree()
     {
+        _expanded.RemoveWhere(p => !Directory.Exists(p));
+
         if (_active != null)
         {
             _owner.ViewFile(null);
@@ -109,6 +112,8 @@ public class FileBrowser : UserControl
             _roots.Add(node);
             _treeHost.Children.Add(node.View);
         }
+
+        RestoreExpanded(_roots);
     }
 
     List<Node> BuildNodes(DirectoryInfo dir, int depth, Node? parent)
@@ -225,10 +230,12 @@ public class FileBrowser : UserControl
                 node.ChildHost!.Children.Add(child.View);
             }
             node.Loaded = true;
+            RestoreExpanded(node.Children);
         }
 
         node.ChildHost!.IsVisible = true;
         node.Row.Classes.Set("expanded", true);
+        _expanded.Add(node.Info.FullName);
     }
 
     void Collapse(Node node)
@@ -240,11 +247,20 @@ public class FileBrowser : UserControl
 
         node.ChildHost!.IsVisible = false;
         node.Row.Classes.Set("expanded", false);
+        _expanded.Remove(node.Info.FullName);
 
         // don't leave the cursor on a row that just got hidden
         if (_selected != null && IsDescendant(_selected, node))
         {
             Select(node);
+        }
+    }
+
+    void RestoreExpanded(IEnumerable<Node> nodes)
+    {
+        foreach (var node in nodes.Where(n => n.IsDir && _expanded.Contains(n.Info.FullName)).ToList())
+        {
+            Expand(node);
         }
     }
 
