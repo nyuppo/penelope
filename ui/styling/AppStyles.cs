@@ -724,6 +724,33 @@ public static class AppStyles
                 new Setter(Border.BorderThicknessProperty, new Thickness(1)),
             }
         });
+
+        // page: borderless text surface that sits on a sheet
+        styles.Add(new Style(x => x.OfType<TextBox>().Class("page"))
+        {
+            Setters =
+            {
+                new Setter(TemplatedControl.BackgroundProperty, Brushes.Transparent),
+                new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(0)),
+                new Setter(Layoutable.MinHeightProperty, 0.0),
+            }
+        });
+        styles.Add(new Style(x => TextBoxBorder(x.OfType<TextBox>().Class("page").Class(":pointerover")))
+        {
+            Setters =
+            {
+                new Setter(Border.BackgroundProperty, Brushes.Transparent),
+                new Setter(Border.BorderThicknessProperty, new Thickness(0)),
+            }
+        });
+        styles.Add(new Style(x => TextBoxBorder(x.OfType<TextBox>().Class("page").Class(":focus")))
+        {
+            Setters =
+            {
+                new Setter(Border.BackgroundProperty, Brushes.Transparent),
+                new Setter(Border.BorderThicknessProperty, new Thickness(0)),
+            }
+        });
     }
 }
 
