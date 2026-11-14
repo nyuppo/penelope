@@ -40,10 +40,6 @@ public class FileBrowser : UserControl
         Classes = { "overline" },
         VerticalAlignment = VerticalAlignment.Center
     };
-    readonly TextBlock _rootCount = new() {
-        Classes = { "meta" },
-        VerticalAlignment = VerticalAlignment.Center
-    };
     readonly List<Node> _roots = new();
     Node? _selected;
     Node? _active;
@@ -57,11 +53,10 @@ public class FileBrowser : UserControl
         FocusAdorner = null;
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
 
-        DockPanel.SetDock(_rootCount, Dock.Right);
         var header = new DockPanel
         {
             Classes = { "tree-label" },
-            Children = { _rootCount, _rootName },
+            Children = { _rootName },
         };
         DockPanel.SetDock(header, Dock.Top);
         
@@ -107,10 +102,8 @@ public class FileBrowser : UserControl
 
         if (!dir.Exists)
         {
-            _rootCount.Text = "";
             return;
         }
-        _rootCount.Text = CountEntries(dir)?.ToString() ?? "";
         foreach (var node in BuildNodes(dir, 0, null))
         {
             _roots.Add(node);
@@ -140,7 +133,7 @@ public class FileBrowser : UserControl
 
         foreach (var file in files.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
         {
-            var row = MakeRow(file, depth, IconFor(file), null, isDir: false);
+            var row = MakeRow(file, depth, IconFor(file), isDir: false);
             var node = new Node
             {
                 Info = file,
@@ -160,7 +153,7 @@ public class FileBrowser : UserControl
 
     Node BuildFolder(DirectoryInfo dir, int depth, Node? parent)
     {
-        var row = MakeRow(dir, depth, Icons.Folder, CountEntries(dir), isDir: true);
+        var row = MakeRow(dir, depth, Icons.Folder, isDir: true);
         var childHost = new StackPanel { IsVisible = false };
         var node = new Node
         {
@@ -346,10 +339,10 @@ public class FileBrowser : UserControl
         node.Row.BringIntoView();
     }
 
-    static Border MakeRow(FileSystemInfo info, int depth, Bitmap? icon, int? count, bool isDir)
+    static Border MakeRow(FileSystemInfo info, int depth, Bitmap? icon, bool isDir)
     {
         var grid = new Grid {
-            ColumnDefinitions = new ColumnDefinitions("12,16,*,Auto"),
+            ColumnDefinitions = new ColumnDefinitions("12,16,*"),
             ColumnSpacing = 8
         };
 
@@ -372,18 +365,6 @@ public class FileBrowser : UserControl
         Grid.SetColumn(name, 2);
         grid.Children.Add(name);
 
-        if (count is int c)
-        {
-            var countText = new TextBlock {
-                Text = c.ToString(),
-                Classes = { "hand_small", "soft" },
-                VerticalAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(0, 0, 4, 0),
-            };
-            Grid.SetColumn(countText, 3);
-            grid.Children.Add(countText);
-        }
-
         return new Border
         {
             Classes = { "row" },
@@ -393,17 +374,6 @@ public class FileBrowser : UserControl
     }
 
     static Bitmap? IconFor(FileInfo f) => FileViewer.ValidImageExtensions.Contains(f.Extension) ? Icons.Image : Icons.Document;
-
-    static int? CountEntries(DirectoryInfo d)
-    {
-        try
-        {
-            return d.EnumerateFileSystemInfos().Count();
-        } catch (Exception e) when (e is UnauthorizedAccessException or IOException)
-        {
-            return null;
-        }
-    }
 
     ContextMenu FileMenu(FileInfo file, Border row) => new()
     {
