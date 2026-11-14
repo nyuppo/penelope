@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -228,7 +229,7 @@ public class FileBrowser : UserControl
     {
         Items =
         {
-            Item("Show in Explorer", () => ShowInExplorer(file.FullName)),
+            Item("Show in Explorer", () => ShowInFileManager(file.FullName)),
         }
     };
 
@@ -236,7 +237,7 @@ public class FileBrowser : UserControl
     {
         Items =
         {
-            Item("Show in Explorer", () => ShowInExplorer(dir.FullName)),
+            Item("Show in Explorer", () => ShowInFileManager(dir.FullName)),
         }
     };
 
@@ -247,5 +248,26 @@ public class FileBrowser : UserControl
         return item;
     }
 
-    static void ShowInExplorer(string path) => System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
+    static void ShowInFileManager(string path)
+    {
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                Process.Start("explorer.exe", $"/select,\"{path}\"");
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", ["-R", path]);
+            }
+            else
+            {
+                Process.Start("xdg-open", [Path.GetDirectoryName(path) ?? path]);
+            }
+        }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            // no file manager available
+        }
+    }
 }
