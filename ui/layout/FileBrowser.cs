@@ -390,7 +390,7 @@ public class FileBrowser : UserControl
         };
     }
 
-    static Bitmap? IconFor(FileInfo f) => ImageContent.ValidImageExtensions.Contains(f.Extension) ? Icons.Image : Icons.Document;
+    static Bitmap? IconFor(FileInfo f) => FileTypes.For(f.Name)?.Icon ?? Icons.Document;
 
     ContextMenu FileMenu(FileInfo file, Border row) => new()
     {

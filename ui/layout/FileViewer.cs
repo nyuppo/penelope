@@ -134,10 +134,8 @@ public class FileViewer : UserControl
         var cts = _loadCts = new CancellationTokenSource();
 
         _content?.Dispose();
-        _content = filePath != null && ImageContent.ValidImageExtensions.Contains(Path.GetExtension(filePath))
-            ? new ImageContent()
-            : null;
-        _host.Content = _content;
+        _content = filePath != null ? FileTypes.For(filePath)?.Create() : null;
+        _host.Content = _content ?? (filePath != null ? Message("No preview for this file type") : null);
         _metaText.Text = "";
 
         if (_content == null)
@@ -158,9 +156,45 @@ public class FileViewer : UserControl
         {
             await content.LoadAsync(filePath!, cts.Token);
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            // TODO: handle corrupt or unsupported file
+        }
+        catch (Exception ex)
+        {
+            if (content == _content)
+            {
+                _host.Content = Message("Couldn't open this file", ex.Message);
+            }
         }
     }
+
+    static Control Message(string title, string? detail = null)
+    {
+        var stack = new StackPanel
+        {
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Spacing = 4,
+            Children =
+            {
+                new TextBlock
+                {
+                    Classes = { "heading" },
+                    Text = title,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                },
+            },
+        };
+        if (detail != null)
+        {
+            stack.Children.Add(new TextBlock
+            {
+                Classes = { "caption", "faint" },
+                Text = detail,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            });
+        }
+        return stack;
+    }
+
 }

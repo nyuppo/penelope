@@ -18,10 +18,6 @@ namespace penelope.layout.viewer;
 
 public sealed class ImageContent : FileContent
 {
-    internal static readonly HashSet<string> ValidImageExtensions = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico",
-    };
     readonly Image _image;
 
     List<Bitmap> _frames = new();
