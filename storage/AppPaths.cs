@@ -20,11 +20,11 @@ public class GlobalConfig
     static string FilePath => Path.Combine(AppPaths.GlobalConfigPath, "config.json");
     static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    public string? AppRoot { get; set; } // null = use default
+    public string? ProjectsRoot { get; set; } // null = use default
     public List<string> RecentProjects { get; set; } = [];
 
     [JsonIgnore]
-    public string EffectiveRoot => string.IsNullOrWhiteSpace(AppRoot) ? AppPaths.DefaultAppRootPath : AppRoot;
+    public string EffectiveProjectsRoot => string.IsNullOrWhiteSpace(ProjectsRoot) ? AppPaths.DefaultAppRootPath : ProjectsRoot;
 
     public event Action? Changed;
 

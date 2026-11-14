@@ -365,7 +365,7 @@ public static class AppStyles
             Setters =
             {
                 new Setter(Border.BackgroundProperty, R("Colour_Paper_100")),
-                new Setter(Decorator.PaddingProperty, new Thickness(8, 0)),
+                new Setter(Decorator.PaddingProperty, new Thickness(8, 0, 0, 0)),
             }
         });
 

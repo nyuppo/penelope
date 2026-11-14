@@ -15,7 +15,7 @@ namespace penelope.layout;
 
 public class FileBrowser : UserControl
 {
-    readonly GlobalConfig _config;
+    readonly Project _project;
 
     readonly HomeView _owner;
     readonly StackPanel _treeHost = new();
@@ -29,9 +29,9 @@ public class FileBrowser : UserControl
     };
     Border? _selected;
 
-    public FileBrowser(GlobalConfig config, HomeView owner)
+    public FileBrowser(Project project, HomeView owner)
     {
-        _config = config;
+        _project = project;
         _owner = owner;
 
         DockPanel.SetDock(_rootCount, Dock.Right);
@@ -51,7 +51,6 @@ public class FileBrowser : UserControl
             }},
         };
 
-        _config.Changed += RefreshTree;
         RefreshTree();
     }
 
@@ -64,8 +63,8 @@ public class FileBrowser : UserControl
         _selected = null;
         _treeHost.Children.Clear();
 
-        var dir = new DirectoryInfo(_config.EffectiveRoot);
-        _rootName.Text = dir.Name.ToUpperInvariant();
+        var dir = new DirectoryInfo(_project.RootPath);
+        _rootName.Text = _project.Name.ToUpperInvariant();
         ToolTip.SetTip(_rootName, dir.FullName);
 
         if (!dir.Exists)
@@ -174,7 +173,8 @@ public class FileBrowser : UserControl
             var countText = new TextBlock {
                 Text = c.ToString(),
                 Classes = { "hand_small", "soft" },
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Padding = new Thickness(0, 0, 4, 0),
             };
             Grid.SetColumn(countText, 3);
             grid.Children.Add(countText);

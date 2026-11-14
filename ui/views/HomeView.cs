@@ -9,6 +9,7 @@ using penelope.layout;
 public class HomeView : UserControl
 {
     readonly GlobalConfig _config;
+    readonly Project _project;
     readonly FileBrowser _fileBrowser;
     readonly FileViewer _fileViewer;
     readonly ContentControl _contentColumn = new()
@@ -16,10 +17,11 @@ public class HomeView : UserControl
         Margin = new Thickness(8)
     };
 
-    public HomeView(GlobalConfig config)
+    public HomeView(GlobalConfig config, Project project)
     {
         _config = config;
-        _fileBrowser = new FileBrowser(_config, this);
+        _project = project;
+        _fileBrowser = new FileBrowser(_project, this);
         _fileViewer = new FileViewer(_config);
 
         var body = new Grid

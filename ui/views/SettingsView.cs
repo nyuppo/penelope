@@ -14,14 +14,14 @@ public class SettingsView : UserControl
 
         var rootBox = new TextBox
         {
-            Text = config.AppRoot ?? "",
+            Text = config.ProjectsRoot ?? "",
             PlaceholderText = AppPaths.DefaultAppRootPath,
         };
 
         var save = new Button { Content = "Save" };
         save.Click += (_, _) =>
         {
-            config.AppRoot = string.IsNullOrWhiteSpace(rootBox.Text) ? null : rootBox.Text.Trim();
+            config.ProjectsRoot = string.IsNullOrWhiteSpace(rootBox.Text) ? null : rootBox.Text.Trim();
             config.Save();
             onDone();
         };
