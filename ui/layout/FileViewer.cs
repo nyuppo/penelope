@@ -84,12 +84,6 @@ public class FileViewer : UserControl
             _viewport.Cursor = null;
         };
 
-        var iconChip = new Border
-        {
-            Classes = { "file-chip" },
-            Child = Icons.Glyph(Icons.Image, "fountain"),
-        };
-
         _dirText = new TextBlock
         {
             Classes = { "caption" },
@@ -105,11 +99,10 @@ public class FileViewer : UserControl
         var titleStack = new StackPanel
         {
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Margin = new Thickness(12, 0),
+            Margin = new Thickness(0, 0, 12, 0),
             Spacing = 0,
             Children = { _dirText, _nameText },
         };
-        Grid.SetColumn(titleStack, 1);
 
         _metaText = new TextBlock
         {
@@ -117,7 +110,7 @@ public class FileViewer : UserControl
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 12, 0),
         };
-        Grid.SetColumn(_metaText, 2);
+        Grid.SetColumn(_metaText, 1);
 
         var openInExplorerAction = new Button
         {
@@ -146,7 +139,7 @@ public class FileViewer : UserControl
                 }
             }
         };
-        Grid.SetColumn(actions, 3);
+        Grid.SetColumn(actions, 2);
 
         _header = new Border
         {
@@ -154,8 +147,8 @@ public class FileViewer : UserControl
             IsVisible = false,
             Child = new Grid
             {
-                ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"),
-                Children = { iconChip, titleStack, _metaText, actions },
+                ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"),
+                Children = { titleStack, _metaText, actions },
             },
         };
         DockPanel.SetDock(_header, Dock.Top);

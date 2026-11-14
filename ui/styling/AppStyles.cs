@@ -313,17 +313,6 @@ public static class AppStyles
                 new Setter(Decorator.PaddingProperty, new Thickness(12, 8)),
             }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("file-chip"))
-        {
-            Setters =
-            {
-                new Setter(Border.BackgroundProperty, R("Colour_Fountain_Wash")),
-                new Setter(Border.CornerRadiusProperty, R("Radius_Md")),
-                new Setter(Layoutable.WidthProperty, 32.0),
-                new Setter(Layoutable.HeightProperty, 32.0),
-                new Setter(Layoutable.VerticalAlignmentProperty, VerticalAlignment.Center),
-            }
-        });
         styles.Add(new Style(x => x.OfType<Border>().Class("header-actions"))
         {
             Setters =
