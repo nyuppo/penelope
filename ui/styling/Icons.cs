@@ -13,6 +13,7 @@ public static class Icons
     public static readonly Bitmap? Chevron = Load("chevron");
     public static readonly Bitmap? Folder = Load("folder");
     public static readonly Bitmap? Document = Load("document");
+    public static readonly Bitmap? DocumentText = Load("document_text");
     public static readonly Bitmap? Image = Load("image");
 
     public static readonly Bitmap? Link = Load("link");

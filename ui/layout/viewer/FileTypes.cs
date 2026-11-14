@@ -14,7 +14,7 @@ public static class FileTypes
     static readonly FileType[] All =
     {
         new("Image", Icons.Image, () => new ImageContent(), ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico"),
-        new("Text", Icons.Document, () => new TextContent(), ".txt", ".md", ".json", ".xml", ".csv", ".log", ".yml", ".yaml", ".ini", ".toml"),
+        new("Text", Icons.DocumentText, () => new TextContent(), ".txt", ".md", ".json", ".xml", ".csv", ".log", ".yml", ".yaml", ".ini", ".toml"),
     };
 
     static readonly Dictionary<string, FileType> ByExtension = Build();
