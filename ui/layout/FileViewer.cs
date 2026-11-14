@@ -6,7 +6,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -18,7 +20,7 @@ namespace penelope.layout;
 public class FileViewer : UserControl
 {
     readonly GlobalConfig _config;
-    readonly TextBlock _pathText;
+    readonly Project _project;
 
     public string? FilePath { get; private set; }
 
@@ -47,9 +49,15 @@ public class FileViewer : UserControl
     static readonly Vector StandardDpi = new(96, 96);
     const double MinVisiblePixels = 50;
 
-    public FileViewer(GlobalConfig config)
+    readonly TextBlock _dirText;
+    readonly TextBlock _nameText;
+    readonly TextBlock _metaText;
+    readonly Border _header;
+
+    public FileViewer(GlobalConfig config, Project project)
     {
         _config = config;
+        _project = project;
         _image = new Image
         {
             Stretch = Stretch.Uniform,
@@ -76,45 +84,98 @@ public class FileViewer : UserControl
             _viewport.Cursor = null;
         };
 
-        var headerRow = new Grid
+        var iconChip = new Border
         {
-            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
-            Margin = new Thickness(2),
+            Classes = { "file-chip" },
+            Child = Icons.Glyph(Icons.Image, "fountain"),
         };
 
-        headerRow.Children.Add(new TextBlock
+        _dirText = new TextBlock
         {
-            Text = "File Preview",
-            FontSize = 12,
-        });
-
-        _pathText = new TextBlock
-        {
-            FontSize = 12,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Classes = { "caption" },
             TextTrimming = TextTrimming.PrefixCharacterEllipsis,
-            Margin = new Thickness(8, 0, 0, 0), // min gap of 8px
-            IsVisible = false,
+            [!TextBlock.FontSizeProperty] = new DynamicResourceExtension("FontSize_Overline"),
         };
-        Grid.SetColumn(_pathText, 1);
-        headerRow.Children.Add(_pathText);
-
-        var header = new Border
+        _nameText = new TextBlock
         {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0, 0, 0, 1),
-            Child = headerRow,
+            Classes = { "title" },
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            Margin = new Thickness(0, -4, 0, 0),
         };
-        DockPanel.SetDock(header, Dock.Top);
+        var titleStack = new StackPanel
+        {
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Margin = new Thickness(12, 0),
+            Spacing = 0,
+            Children = { _dirText, _nameText },
+        };
+        Grid.SetColumn(titleStack, 1);
 
-        Content = new DockPanel { Children = { header, _viewport } };
+        _metaText = new TextBlock
+        {
+            Classes = { "mono" },
+            Text = "dummy",
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 12, 0),
+        };
+        Grid.SetColumn(_metaText, 2);
+
+        var actions = new Border
+        {
+            Classes = { "header-actions" },
+            Child = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 2,
+                Children =
+                {
+                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "Zoom out" },
+                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "Zoom in" },
+                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "More" },
+                }
+            }
+        };
+        Grid.SetColumn(actions, 3);
+
+        _header = new Border
+        {
+            Classes = { "viewer-header" },
+            IsVisible = false,
+            Child = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"),
+                Children = { iconChip, titleStack, _metaText, actions },
+            },
+        };
+        DockPanel.SetDock(_header, Dock.Top);
+
+        Content = new DockPanel { Children = { _header, _viewport } };
     }
 
     public async void SetFile(string? filePath)
     {
         FilePath = filePath;
-        _pathText.Text = filePath;
-        _pathText.IsVisible = !string.IsNullOrEmpty(filePath);
+
+        _header.IsVisible = filePath != null;
+        if (filePath != null)
+        {
+            _nameText.Text = Path.GetFileName(filePath);
+
+            var dir = Path.GetDirectoryName(filePath) ?? "";
+            var parts = Path.GetRelativePath(_project.RootPath, dir).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            _dirText.Inlines = new InlineCollection();
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (i > 0)
+                {
+                    _dirText.Inlines.Add(new Run(" / ")
+                    {
+                        Foreground = this.FindResource("Colour_Ink_Faint") as IBrush
+                    });
+                }
+                _dirText.Inlines.Add(new Run(parts[i].ToUpperInvariant()));
+            }
+        }
 
         var id = ++_loadId;
 

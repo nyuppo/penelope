@@ -302,6 +302,43 @@ public static class AppStyles
             }
         });
 
+        styles.Add(new Style(x => x.OfType<Border>().Class("viewer-header"))
+        {
+            Setters =
+            {
+                new Setter(Border.BackgroundProperty, R("Colour_Paper_50")),
+                new Setter(Border.BorderBrushProperty, R("Colour_Paper_300")),
+                new Setter(Border.BorderThicknessProperty, new Thickness(0, 0, 0, 1)),
+                new Setter(Border.BoxShadowProperty, R("Shadow_Sheet")),
+                new Setter(Decorator.PaddingProperty, new Thickness(12, 8)),
+            }
+        });
+        styles.Add(new Style(x => x.OfType<Border>().Class("file-chip"))
+        {
+            Setters =
+            {
+                new Setter(Border.BackgroundProperty, R("Colour_Fountain_Wash")),
+                new Setter(Border.CornerRadiusProperty, R("Radius_Md")),
+                new Setter(Layoutable.WidthProperty, 32.0),
+                new Setter(Layoutable.HeightProperty, 32.0),
+                new Setter(Layoutable.VerticalAlignmentProperty, VerticalAlignment.Center),
+            }
+        });
+        styles.Add(new Style(x => x.OfType<Border>().Class("header-actions"))
+        {
+            Setters =
+            {
+                new Setter(Border.BorderBrushProperty, R("Colour_Paper_300")),
+                new Setter(Border.BorderThicknessProperty, new Thickness(1, 0, 0, 0)),
+                new Setter(Decorator.PaddingProperty, new Thickness(8, 0, 0, 0)),
+                new Setter(Layoutable.VerticalAlignmentProperty, VerticalAlignment.Center),
+            }
+        });
+        styles.Add(new Style(x => x.OfType<Border>().Class("glyph").Class("fountain"))
+        {
+            Setters = { new Setter(Border.BackgroundProperty, R("Colour_Fountain")) }
+        });
+
         // nav: self-explanatory :P
         // place a line stitch along the bottom (see next)
         styles.Add(new Style(x => x.OfType<Border>().Class("nav"))

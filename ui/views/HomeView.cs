@@ -12,17 +12,14 @@ public class HomeView : UserControl
     readonly Project _project;
     readonly FileBrowser _fileBrowser;
     readonly FileViewer _fileViewer;
-    readonly ContentControl _contentColumn = new()
-    {
-        Margin = new Thickness(8)
-    };
+    readonly ContentControl _contentColumn = new() { };
 
     public HomeView(GlobalConfig config, Project project)
     {
         _config = config;
         _project = project;
         _fileBrowser = new FileBrowser(_project, this);
-        _fileViewer = new FileViewer(_config);
+        _fileViewer = new FileViewer(_config, _project);
 
         var body = new Grid
         {

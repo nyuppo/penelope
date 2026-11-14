@@ -55,7 +55,7 @@ public class FileBrowser : UserControl
                     {
                         Items =
                         {
-                            Item("New folder...", () => {}),
+                            Item("New folder...", () => CreateFolder(_project.RootPath, "New Folder")),
                             Item("New file...", () => {}),
                             new Separator(),
                             Item("Refresh", RefreshTree),
@@ -269,5 +269,33 @@ public class FileBrowser : UserControl
         {
             // no file manager available
         }
+    }
+
+    void CreateFolder(string parent, string baseName)
+    {
+        var path = UniquePath(parent, baseName);
+
+        try
+        {
+            Directory.CreateDirectory(path);
+        } catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // TODO: let user know
+            return;
+        }
+
+        RefreshTree();
+    }
+
+    static string UniquePath(string parent, string baseName)
+    {
+        var path = Path.Combine(parent, baseName);
+        
+        for (int i = 2; Directory.Exists(path) || File.Exists(path); i++)
+        {
+            path = Path.Combine(parent, $"{baseName} ({i})");
+        }
+
+        return path;
     }
 }
