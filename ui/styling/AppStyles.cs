@@ -594,11 +594,7 @@ public static class AppStyles
         {
             Setters = { new Setter(Border.BackgroundProperty, R("Colour_Paper_200")) }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("selected"))
-        {
-            Setters = { new Setter(Border.BackgroundProperty, Brushes.Transparent) }
-        });
- 
+
         styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("expanded").Descendant().OfType<Border>().Class("glyph").Class("chevron"))
         {
             Setters = { new Setter(Visual.RenderTransformProperty, TransformOperations.Parse("rotate(90deg)")) }
@@ -618,11 +614,11 @@ public static class AppStyles
                 new Setter(InputElement.IsHitTestVisibleProperty, false),
             }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("selected").Descendant().OfType<Border>().Class("highlighter"))
+        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("active").Descendant().OfType<Border>().Class("highlighter"))
         {
             Setters = { new Setter(Visual.IsVisibleProperty, true) }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("selected").Descendant().OfType<TextBlock>().Class("name"))
+        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("active").Descendant().OfType<TextBlock>().Class("name"))
         {
             Setters =
             {
@@ -630,13 +626,24 @@ public static class AppStyles
                 new Setter(TextBlock.ForegroundProperty, R("Colour_Ink")),
             }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("selected").Descendant().OfType<TextBlock>().Class("meta"))
+        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("active").Descendant().OfType<TextBlock>().Class("meta"))
         {
             Setters = { new Setter(TextBlock.ForegroundProperty, R("Colour_Ink")) }
         });
-        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("selected").Descendant().OfType<Border>().Class("glyph").Not(y => y.Class("chevron")))
+        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("active").Descendant().OfType<Border>().Class("glyph").Not(y => y.Class("chevron")))
         {
             Setters = { new Setter(Border.BackgroundProperty, R("Colour_Ink")) }
+        });
+
+        styles.Add(new Style(x => x.OfType<penelope.layout.FileBrowser>().Class(":focus-within").Descendant().OfType<Border>().Class("row").Class("selected"))
+        {
+            Setters = { new Setter(Border.BackgroundProperty, R("Colour_Paper_200")) }
+        });
+
+        // the highlighter is the active row's background; must come after hover/cursor styles to win
+        styles.Add(new Style(x => x.OfType<Border>().Class("row").Class("active"))
+        {
+            Setters = { new Setter(Border.BackgroundProperty, Brushes.Transparent) }
         });
     }
 

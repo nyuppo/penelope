@@ -114,7 +114,6 @@ public class FileViewer : UserControl
         _metaText = new TextBlock
         {
             Classes = { "mono" },
-            Text = "dummy",
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Margin = new Thickness(0, 0, 12, 0),
         };
@@ -190,6 +189,7 @@ public class FileViewer : UserControl
         _frames.Clear();
         _view = Matrix.Identity;
         _image.RenderTransform = null;
+        _metaText.Text = "";
 
         if (filePath == null || !ValidImageExtensions.Contains(Path.GetExtension(filePath)))
         {
@@ -220,6 +220,10 @@ public class FileViewer : UserControl
         (_frames, _durations, _frameIndex) = (r.frames, r.durations, 0);
         _image.Source = _frames[0];
         _image.IsVisible = true;
+
+        var imgSize = _frames[0].PixelSize;
+        _metaText.Text = $"{imgSize.Width} × {imgSize.Height}";
+
         if (_frames.Count > 1)
         {
             _animTimer.Interval = TimeSpan.FromMilliseconds(_durations[0]);
