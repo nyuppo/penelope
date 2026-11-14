@@ -47,7 +47,20 @@ public class FileBrowser : UserControl
             Classes = { "tree" },
             Child = new DockPanel { Children = {
                 header,
-                new ScrollViewer { Content = _treeHost }
+                new ScrollViewer {
+                    Content = _treeHost,
+                    Background = Brushes.Transparent,
+                    ContextMenu = new ContextMenu
+                    {
+                        Items =
+                        {
+                            Item("New folder...", () => {}),
+                            Item("New file...", () => {}),
+                            new Separator(),
+                            Item("Refresh", RefreshTree),
+                        }
+                    }
+                }
             }},
         };
 
@@ -102,6 +115,7 @@ public class FileBrowser : UserControl
         foreach (var file in files.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
         {
             var row = MakeRow(file, depth, IconFor(file), null, isDir: false);
+            row.ContextMenu = FileMenu(file, row);
             row.PointerPressed += (_, e) =>
             {
                 if (!e.GetCurrentPoint(row).Properties.IsLeftButtonPressed)
@@ -120,6 +134,7 @@ public class FileBrowser : UserControl
     Control BuildFolder(DirectoryInfo dir, int depth)
     {
         var row = MakeRow(dir, depth, Icons.Folder, CountEntries(dir), isDir: true);
+        row.ContextMenu = FolderMenu(dir, row);
         var children = new StackPanel { IsVisible = false };
         var loaded = false;
 
@@ -208,4 +223,29 @@ public class FileBrowser : UserControl
             return null;
         }
     }
+
+    ContextMenu FileMenu(FileInfo file, Border row) => new()
+    {
+        Items =
+        {
+            Item("Show in Explorer", () => ShowInExplorer(file.FullName)),
+        }
+    };
+
+    ContextMenu FolderMenu(DirectoryInfo dir, Border row) => new()
+    {
+        Items =
+        {
+            Item("Show in Explorer", () => ShowInExplorer(dir.FullName)),
+        }
+    };
+
+    static MenuItem Item(string header, Action onClick)
+    {
+        var item = new MenuItem { Header = header };
+        item.Click += (_, _) => onClick();
+        return item;
+    }
+
+    static void ShowInExplorer(string path) => System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
 }
