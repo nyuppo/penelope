@@ -12,6 +12,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using penelope.layout.viewer;
 
 namespace penelope.layout;
 
@@ -389,7 +390,7 @@ public class FileBrowser : UserControl
         };
     }
 
-    static Bitmap? IconFor(FileInfo f) => FileViewer.ValidImageExtensions.Contains(f.Extension) ? Icons.Image : Icons.Document;
+    static Bitmap? IconFor(FileInfo f) => ImageContent.ValidImageExtensions.Contains(f.Extension) ? Icons.Image : Icons.Document;
 
     ContextMenu FileMenu(FileInfo file, Border row) => new()
     {
