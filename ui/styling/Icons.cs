@@ -15,6 +15,9 @@ public static class Icons
     public static readonly Bitmap? Document = Load("document");
     public static readonly Bitmap? Image = Load("image");
 
+    public static readonly Bitmap? Link = Load("link");
+    public static readonly Bitmap? LinkExternal = Load("link_external");
+
     static Bitmap? Load(string name)
     {
         var uri = new Uri($"avares://penelope/Assets/Icons/{name}.png");

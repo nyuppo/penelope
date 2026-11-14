@@ -387,7 +387,7 @@ public class FileBrowser : UserControl
     {
         Items =
         {
-            Item("Add folder...", () => CreateFolder(dir.FullName, "New Folder")),
+            Item("Add subfolder...", () => CreateFolder(dir.FullName, "New Folder")),
             Item("Add file...", () => {}),
             new Separator(),
             Item("Show in Explorer", () => ShowInFileManager(dir.FullName)),
@@ -401,7 +401,7 @@ public class FileBrowser : UserControl
         return item;
     }
 
-    static void ShowInFileManager(string path)
+    public static void ShowInFileManager(string path)
     {
         try
         {

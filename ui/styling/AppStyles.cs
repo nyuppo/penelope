@@ -159,10 +159,10 @@ public static class AppStyles
             Setters =
             {
                 new Setter(Border.BackgroundProperty, R("Colour_Ink_Soft")),
-                new Setter(Layoutable.WidthProperty, 16.0),
-                new Setter(Layoutable.HeightProperty, 16.0),
-                new Setter(Layoutable.VerticalAlignmentProperty, Avalonia.Layout.VerticalAlignment.Center),
-                new Setter(Layoutable.HorizontalAlignmentProperty, Avalonia.Layout.HorizontalAlignment.Center),
+                new Setter(Layoutable.WidthProperty, 20.0),
+                new Setter(Layoutable.HeightProperty, 20.0),
+                new Setter(Layoutable.VerticalAlignmentProperty, VerticalAlignment.Center),
+                new Setter(Layoutable.HorizontalAlignmentProperty, HorizontalAlignment.Center),
             }
         });
         styles.Add(new Style(x => x.OfType<Border>().Class("glyph").Class("chevron"))

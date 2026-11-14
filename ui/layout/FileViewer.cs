@@ -119,6 +119,20 @@ public class FileViewer : UserControl
         };
         Grid.SetColumn(_metaText, 2);
 
+        var openInExplorerAction = new Button
+        {
+            Classes = { "icon" },
+            Content = Icons.Glyph(Icons.LinkExternal),
+            [ToolTip.TipProperty] = "Show in Explorer",
+        };
+        openInExplorerAction.Click += (_, _) =>
+        {
+            if (FilePath != null)
+            {
+                FileBrowser.ShowInFileManager(FilePath);
+            }
+        };
+
         var actions = new Border
         {
             Classes = { "header-actions" },
@@ -128,9 +142,7 @@ public class FileViewer : UserControl
                 Spacing = 2,
                 Children =
                 {
-                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "Zoom out" },
-                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "Zoom in" },
-                    new Button { Classes = { "icon" }, Content = Icons.Glyph(null), [ToolTip.TipProperty] = "More" },
+                    openInExplorerAction
                 }
             }
         };
