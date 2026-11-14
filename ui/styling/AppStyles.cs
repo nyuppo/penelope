@@ -49,6 +49,7 @@ public static class AppStyles
         r["Colour_Paper_100"] = new SolidColorBrush(Color.Parse("#F6F1E5"));
         r["Colour_Paper_200"] = new SolidColorBrush(Color.Parse("#EDE6D6"));
         r["Colour_Paper_300"] = new SolidColorBrush(Color.Parse("#E2D9C4"));
+        r["Colour_Paper_400"] = new SolidColorBrush(Color.Parse("#D2C6AC"));
 
         r["Colour_Deco_Rule_Blue"] = new SolidColorBrush(Color.Parse("#CFDBE7"));
         r["Colour_Deco_Margin_Red"] = new SolidColorBrush(Color.Parse("#E3A59A"));
@@ -335,9 +336,8 @@ public static class AppStyles
             Setters =
             {
                 new Setter(Border.BackgroundProperty, R("Colour_Linen")),
-                new Setter(Border.BorderBrushProperty, R("Colour_Paper_300")),
+                new Setter(Border.BorderBrushProperty, R("Colour_Paper_400")),
                 new Setter(Border.BorderThicknessProperty, new Thickness(0, 0, 0, 1)),
-                new Setter(Layoutable.HeightProperty, 32.0),
             }
         });
 
@@ -346,7 +346,8 @@ public static class AppStyles
         {
             Setters =
             {
-                new Setter(Shape.StrokeProperty, R("Colour_Paper_300")),
+                new Setter(Shape.StrokeProperty, R("Colour_Thread")),
+                new Setter(Visual.OpacityProperty, 0.125),
                 new Setter(Shape.StrokeThicknessProperty, 1.5),
                 new Setter(Shape.StrokeDashArrayProperty, new AvaloniaList<double> { 3, 2 }),
                 new Setter(Layoutable.VerticalAlignmentProperty, Avalonia.Layout.VerticalAlignment.Bottom),
@@ -642,7 +643,12 @@ public static class AppStyles
     {
         styles.Add(new Style(x => x.OfType<Menu>())
         {
-            Setters = { new Setter(Layoutable.HeightProperty, 24.0) }
+            Setters =
+            {
+                new Setter(Layoutable.HeightProperty, 24.0),
+                new Setter(Layoutable.MinHeightProperty, 0.0),
+                new Setter(TemplatedControl.PaddingProperty, new Thickness(0)),
+            }
         });
 
         styles.Add(new Style(x => x.OfType<Menu>().Child().OfType<MenuItem>())

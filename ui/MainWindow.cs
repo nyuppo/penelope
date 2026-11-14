@@ -38,8 +38,8 @@ public class MainWindow : Window
         Height = 700;
 
         var menu = NavBar.Create(this);
-        menu.Margin = new Thickness(16, 0);
-        menu.VerticalAlignment = VerticalAlignment.Center;
+        menu.Margin = new Thickness(4);
+        menu.VerticalAlignment = VerticalAlignment.Stretch;
 
         var navbar = new Border
         {
